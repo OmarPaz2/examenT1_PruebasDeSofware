@@ -114,7 +114,7 @@ class InfraccionesApplicationTests {
 
 		Vehiculo vehiculo = new Vehiculo(1L,"000-000","Toyota",2015);
 		Infractor infractor  = new Infractor(1L,"12345678","Juan Roberto","Mamani Condorcanqui","condorcanqui@gmail.com",false);
-		Multa multa = new Multa(1L, "M006-455QW", 500.00, LocalDate.now().minusDays(12),LocalDate.now().minusDays(2), EstadoMulta.PENDIENTE, infractor, vehiculo);
+		Multa multa = new Multa("M006-455QW", 500.00, LocalDate.now().minusDays(12),LocalDate.now().minusDays(2), EstadoMulta.PENDIENTE, infractor, vehiculo);
 
 		when(multaRepository.findById(idMulta)).thenReturn(Optional.of(multa));
 

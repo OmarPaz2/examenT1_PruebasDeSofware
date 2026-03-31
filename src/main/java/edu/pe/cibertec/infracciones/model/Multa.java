@@ -49,8 +49,7 @@ public class Multa {
     )
     private List<TipoInfraccion> tiposInfraccion;
 
-    public Multa(Long id, String codigo, Double monto, LocalDate fechaEmision, LocalDate fechaVencimiento, EstadoMulta estado, Infractor infractor, Vehiculo vehiculo) {
-        this.id = id;
+    public Multa(String codigo, Double monto, LocalDate fechaEmision, LocalDate fechaVencimiento, EstadoMulta estado, Infractor infractor, Vehiculo vehiculo) {
         this.codigo = codigo;
         this.monto = monto;
         this.fechaEmision = fechaEmision;
