@@ -13,7 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -58,6 +60,39 @@ public class PagoServiceImpl implements IPagoService {
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
+    }
+
+    @Override
+    public PagoResponseDTO procesar_Pago(Long multaID) {
+        Multa multa  = multaRepository.findById(multaID)
+                .orElseThrow(() -> new MultaNotFoundException(multaID));
+
+        double descuento = 0.0;
+
+
+        if(multa.getFechaEmision().isEqual(LocalDate.now())) {
+            descuento = 0.2 * multa.getMonto();
+
+        }
+       double recargo = 0.0;
+
+        if(multa.getFechaVencimiento().isBefore(LocalDate.now())){
+            recargo = 0.15 * multa.getMonto();
+        }
+
+        double montoFinal = multa.getMonto() - descuento + recargo;
+
+            Pago pago = new Pago(1L,montoFinal,LocalDate.now(),descuento,recargo,multa);
+
+            pagoRepository.save(pago);
+
+            multa.setEstado(EstadoMulta.PAGADA);
+
+            multaRepository.save(multa);
+
+            return mapToResponse(pago);
+
+
     }
 
     private PagoResponseDTO mapToResponse(Pago pago) {

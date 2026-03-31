@@ -1,10 +1,14 @@
 package edu.pe.cibertec.infracciones.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.List;
 
 @Data
+@NoArgsConstructor
 @Entity
 @Table(name = "infractores")
 public class Infractor {
@@ -35,4 +39,14 @@ public class Infractor {
             inverseJoinColumns = @JoinColumn(name = "vehiculo_id")
     )
     private List<Vehiculo> vehiculos;
+
+
+    public Infractor(Long id, String dni, String nombre, String apellido, String email, boolean bloqueado) {
+        this.id = id;
+        this.dni = dni;
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.email = email;
+        this.bloqueado = bloqueado;
+    }
 }

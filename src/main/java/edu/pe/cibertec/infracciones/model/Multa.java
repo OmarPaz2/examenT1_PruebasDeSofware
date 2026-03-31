@@ -2,10 +2,13 @@ package edu.pe.cibertec.infracciones.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDate;
 import java.util.List;
 
 @Data
+@NoArgsConstructor
 @Entity
 @Table(name = "multas")
 public class Multa {
@@ -45,4 +48,15 @@ public class Multa {
             inverseJoinColumns = @JoinColumn(name = "tipo_infraccion_id")
     )
     private List<TipoInfraccion> tiposInfraccion;
+
+    public Multa(Long id, String codigo, Double monto, LocalDate fechaEmision, LocalDate fechaVencimiento, EstadoMulta estado, Infractor infractor, Vehiculo vehiculo) {
+        this.id = id;
+        this.codigo = codigo;
+        this.monto = monto;
+        this.fechaEmision = fechaEmision;
+        this.fechaVencimiento = fechaVencimiento;
+        this.estado = estado;
+        this.infractor = infractor;
+        this.vehiculo = vehiculo;
+    }
 }

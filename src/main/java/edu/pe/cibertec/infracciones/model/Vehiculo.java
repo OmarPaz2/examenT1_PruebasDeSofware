@@ -2,10 +2,13 @@ package edu.pe.cibertec.infracciones.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.List;
 
 @Data
 @Entity
+@NoArgsConstructor
 @Table(name = "vehiculos")
 public class Vehiculo {
 
@@ -27,4 +30,11 @@ public class Vehiculo {
 
     @ManyToMany(mappedBy = "vehiculos")
     private List<Infractor> infractores;
+
+    public Vehiculo(Long id, String placa, String marca, Integer anio) {
+        this.id = id;
+        this.placa = placa;
+        this.marca = marca;
+        this.anio = anio;
+    }
 }

@@ -2,9 +2,12 @@ package edu.pe.cibertec.infracciones.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDate;
 
 @Data
+@NoArgsConstructor
 @Entity
 @Table(name = "pagos")
 public class Pago {
@@ -28,4 +31,13 @@ public class Pago {
     @OneToOne
     @JoinColumn(name = "multa_id", nullable = false, unique = true)
     private Multa multa;
+
+    public Pago(Long id, Double montoPagado, LocalDate fechaPago, Double descuentoAplicado, Double recargo, Multa multa) {
+        this.id = id;
+        this.montoPagado = montoPagado;
+        this.fechaPago = fechaPago;
+        this.descuentoAplicado = descuentoAplicado;
+        this.recargo = recargo;
+        this.multa = multa;
+    }
 }

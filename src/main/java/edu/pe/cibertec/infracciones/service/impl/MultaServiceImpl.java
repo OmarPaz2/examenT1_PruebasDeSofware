@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -93,6 +94,40 @@ public class MultaServiceImpl implements IMultaService {
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
+    }
+
+    @Override
+    public boolean verificarBloqueo(Long id) {
+        List<Multa> multas = multaRepository.findByInfractor_Id(id);
+        int multasVencidas= 0;
+
+        for(Multa multa : multas){
+
+            if(multa.getEstado() == EstadoMulta.VENCIDA) {
+                multasVencidas++;
+            }
+        }
+
+        if(multasVencidas>=3){
+            Optional<Infractor> infractor = infractorRepository.findById(id);
+
+            infractor.get().setBloqueado(true);
+            infractorRepository.save(infractor.get());
+            return true;
+        }
+        return false;
+
+    }
+
+    @Override
+    public Multa actualizarEstados(Long id) {
+        Optional<Multa> multaEntity = multaRepository.findById(id);
+
+        if(multaEntity.get().getEstado() == EstadoMulta.PENDIENTE && multaEntity.get().getFechaVencimiento().isBefore(LocalDate.now())){
+            multaEntity.get().setEstado(EstadoMulta.VENCIDA);
+            return multaRepository.save(multaEntity.get());
+        }
+        return multaEntity.get();
     }
 
     private MultaResponseDTO mapToResponse(Multa multa) {
