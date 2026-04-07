@@ -11,5 +11,5 @@ public interface IMultaService {
     MultaResponseDTO obtenerMultaPorId(Long id);
     List<MultaResponseDTO> obtenerMultasPorInfractor(Long infractorId);
     List<MultaResponseDTO> obtenerMultasPorVehiculo(Long vehiculoId);
-    Multa actualizarEstados(Long id);
+    void actualizarEstados();
 }

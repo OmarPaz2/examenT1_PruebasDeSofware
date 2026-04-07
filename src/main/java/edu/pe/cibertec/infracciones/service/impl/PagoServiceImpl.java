@@ -62,38 +62,6 @@ public class PagoServiceImpl implements IPagoService {
                 .toList();
     }
 
-    @Override
-    public PagoResponseDTO procesar_Pago(Long multaID) {
-        Multa multa  = multaRepository.findById(multaID)
-                .orElseThrow(() -> new MultaNotFoundException(multaID));
-
-        double descuento = 0.0;
-
-
-        if(multa.getFechaEmision().isEqual(LocalDate.now())) {
-            descuento = 0.2 * multa.getMonto();
-
-        }
-       double recargo = 0.0;
-
-        if(multa.getFechaVencimiento().isBefore(LocalDate.now())){
-            recargo = 0.15 * multa.getMonto();
-        }
-
-        double montoFinal = multa.getMonto() - descuento + recargo;
-
-            Pago pago = new Pago(1L,montoFinal,LocalDate.now(),descuento,recargo,multa);
-
-            pagoRepository.save(pago);
-
-            multa.setEstado(EstadoMulta.PAGADA);
-
-            multaRepository.save(multa);
-
-            return mapToResponse(pago);
-
-
-    }
 
     private PagoResponseDTO mapToResponse(Pago pago) {
         PagoResponseDTO dto = new PagoResponseDTO();
