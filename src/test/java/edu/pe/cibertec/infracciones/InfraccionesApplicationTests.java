@@ -23,8 +23,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,12 +43,15 @@ class InfraccionesApplicationTests {
 	private PagoRepository pagoRepository;
 
 	@InjectMocks
+	private InfractorServiceImpl infractorService;
+
+	@InjectMocks
 	private MultaServiceImpl multaService;
 
 	@InjectMocks
 	private PagoServiceImpl pagoService;
 
-
+    //test 1
 	@Test
 	@DisplayName("Verificar si un infractor se encuntra bloqueado con 2 multas vencidas y 3 pagadas")
 	 void givenOffenderWith2OverdueAnd3PaidFines_whenVerifyBloqueo_thenOffenderIsNotBlocked(){
@@ -57,29 +59,30 @@ class InfraccionesApplicationTests {
 		Vehiculo vehiculo = new Vehiculo(1L,"000-000","Toyota",2015);
 		Infractor infractor  = new Infractor(1L,"12345678","Juan Roberto","Mamani Condorcanqui","condorcanqui@gmail.com",false);
 		List<Multa> multas  = List.of(
-				new Multa(1L,"M001-455QW",850.00, LocalDate.of(2026,3,30),LocalDate.of(2026,4,5), EstadoMulta.PAGADA,infractor,vehiculo),
-				new Multa(1L,"M002-455QW",459.00, LocalDate.of(2026,3,21),LocalDate.of(2026,3,31), EstadoMulta.PAGADA,infractor,vehiculo),
-				new Multa(1L,"M003-455QW",379.00, LocalDate.of(2026,3,11),LocalDate.of(2026,3,25), EstadoMulta.PAGADA,infractor,vehiculo),
-				new Multa(1L,"M004-455QW",1789.00, LocalDate.of(2026,3,15),LocalDate.of(2026,3,26), EstadoMulta.VENCIDA,infractor,vehiculo),
-				new Multa(1L,"M005-455QW",398.00, LocalDate.of(2026,3,9),LocalDate.of(2026,3,22), EstadoMulta.VENCIDA,infractor,vehiculo)
+				new Multa("M001-455QW",850.00, LocalDate.of(2026,3,30),LocalDate.of(2026,4,5), EstadoMulta.PAGADA,infractor,vehiculo),
+				new Multa("M002-455QW",459.00, LocalDate.of(2026,3,21),LocalDate.of(2026,3,31), EstadoMulta.PAGADA,infractor,vehiculo),
+				new Multa("M003-455QW",379.00, LocalDate.of(2026,3,11),LocalDate.of(2026,3,25), EstadoMulta.PAGADA,infractor,vehiculo),
+				new Multa("M004-455QW",1789.00, LocalDate.of(2026,3,15),LocalDate.of(2026,3,26), EstadoMulta.VENCIDA,infractor,vehiculo),
+				new Multa("M005-455QW",398.00, LocalDate.of(2026,3,9),LocalDate.of(2026,3,22), EstadoMulta.VENCIDA,infractor,vehiculo)
 		);
 
-		when(multaRepository.findByInfractor_Id(idInfractor)).thenReturn(multas);
+		when(infractorRepository.findById(idInfractor)).thenReturn(Optional.of(infractor));
+        when(multaRepository.findByInfractor_Id(idInfractor)).thenReturn(multas);
+		boolean bloqueado = infractorService.verificarBloqueo(idInfractor);
 
-		Boolean bloqueado = multaService.verificarBloqueo(idInfractor);
-
-		assertEquals(false,bloqueado);
+		assertFalse(bloqueado);
+		verify(infractorRepository,times(1)).findById(idInfractor);
 		verify(multaRepository, times(1)).findByInfractor_Id(idInfractor);
 		verify(infractorRepository, never()).save(any(Infractor.class));
 	}
-
+    //test 2
 	@Test
 	@DisplayName("Multa pendiente con fecha limite pasada cambia de estado a VENCIDA")
 	void givenPendingFine_whenUpdateStatuses_thenFineChangesToExpired(){
      Long idMulta = 1L;
 		Vehiculo vehiculo = new Vehiculo(1L,"000-000","Toyota",2015);
 		Infractor infractor  = new Infractor(1L,"12345678","Juan Roberto","Mamani Condorcanqui","condorcanqui@gmail.com",false);
-	    Optional<Multa> multa = Optional.of(new Multa(1L, "M006-455QW", 1900.00, LocalDate.of(2025, 12, 20), LocalDate.of(2026, 1, 1), EstadoMulta.PENDIENTE, infractor, vehiculo));
+	    Optional<Multa> multa = Optional.of(new Multa( "M006-455QW", 1900.00, LocalDate.of(2025, 12, 20), LocalDate.of(2026, 1, 1), EstadoMulta.PENDIENTE, infractor, vehiculo));
 
 		when(multaRepository.findById(idMulta)).thenReturn(multa);
 		when(multaRepository.save(any(Multa.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -89,6 +92,8 @@ class InfraccionesApplicationTests {
 		verify(multaRepository, times(1)).findById(idMulta);
 		verify(multaRepository,times(1)).save(argThat(m -> m.getEstado() == EstadoMulta.VENCIDA));
 	}
+
+	//test 3
 	@Test
 	@DisplayName("Multa de 500 recien emitida es pagada, aplicando descuento")
 	void givenUnexpiredFine_whenProcessPayment_thenApplyDiscountAndStatusChangesToPaid(){
@@ -96,7 +101,7 @@ class InfraccionesApplicationTests {
 
 		Vehiculo vehiculo = new Vehiculo(1L,"000-000","Toyota",2015);
 		Infractor infractor  = new Infractor(1L,"12345678","Juan Roberto","Mamani Condorcanqui","condorcanqui@gmail.com",false);
-		Multa multa = new Multa(1L, "M006-455QW", 500.00, LocalDate.now(), LocalDate.of(2026, 4, 8), EstadoMulta.PENDIENTE, infractor, vehiculo);
+		Multa multa = new Multa("M006-455QW", 500.00, LocalDate.now(), LocalDate.of(2026, 4, 8), EstadoMulta.PENDIENTE, infractor, vehiculo);
 		when(multaRepository.findById(idMulta)).thenReturn(Optional.of(multa));
 		when(pagoRepository.save(any(Pago.class))).thenAnswer(i -> i.getArguments()[0]);
 		PagoResponseDTO pago = pagoService.procesar_Pago(idMulta);
@@ -106,7 +111,7 @@ class InfraccionesApplicationTests {
 		verify(pagoRepository,times(1)).save(any(Pago.class));
 		verify(multaRepository,times(1)).save(multa);
 	}
-
+    //test 4
 	@Test
 	@DisplayName("Multa vencida hace dos dias tiene recargo de 75 soles, no aplica descuento")
 	void givenFineExpiredTwoDaysAgo_whenProcessPayment_thenCapturePaymentWithSurcharge(){

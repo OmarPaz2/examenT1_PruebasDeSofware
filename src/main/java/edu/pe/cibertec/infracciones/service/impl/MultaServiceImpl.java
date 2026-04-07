@@ -96,28 +96,7 @@ public class MultaServiceImpl implements IMultaService {
                 .toList();
     }
 
-    @Override
-    public boolean verificarBloqueo(Long id) {
-        List<Multa> multas = multaRepository.findByInfractor_Id(id);
-        int multasVencidas= 0;
 
-        for(Multa multa : multas){
-
-            if(multa.getEstado() == EstadoMulta.VENCIDA) {
-                multasVencidas++;
-            }
-        }
-
-        if(multasVencidas>=3){
-            Optional<Infractor> infractor = infractorRepository.findById(id);
-
-            infractor.get().setBloqueado(true);
-            infractorRepository.save(infractor.get());
-            return true;
-        }
-        return false;
-
-    }
 
     @Override
     public Multa actualizarEstados(Long id) {

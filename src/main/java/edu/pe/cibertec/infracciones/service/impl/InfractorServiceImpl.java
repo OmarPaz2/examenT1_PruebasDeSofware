@@ -23,7 +23,7 @@ public class InfractorServiceImpl implements IInfractorService {
 
     private final InfractorRepository infractorRepository;
     private final VehiculoRepository vehiculoRepository;
-    private  final MultaRepository multaRepository;
+    private final MultaRepository multaRepository;
 
     @Override
     public InfractorResponseDTO registrarInfractor(InfractorRequestDTO dto) {
@@ -73,5 +73,28 @@ public class InfractorServiceImpl implements IInfractorService {
         dto.setEmail(infractor.getEmail());
         dto.setBloqueado(infractor.isBloqueado());
         return dto;
+    }
+
+    @Override
+    public boolean verificarBloqueo(Long id) {
+        Infractor infractorEntity = infractorRepository.findById(id)
+                .orElseThrow(()->new RuntimeException("Infractor no encontrado"));
+
+        int multasVencidas= 0;
+     List<Multa> multasInfractor = multaRepository.findByInfractor_Id(infractorEntity.getId());
+        for(Multa multa : multasInfractor){
+
+            if(multa.getEstado() == EstadoMulta.VENCIDA) {
+                multasVencidas++;
+            }
+        }
+
+        if(multasVencidas>=3){
+            infractorEntity.setBloqueado(true);
+            infractorRepository.save(infractorEntity);
+            return true;
+        }
+        return false;
+
     }
 }
